@@ -84,7 +84,7 @@ async def main():
 
     # econ connection
     conn = telnetlib.Telnet()
-    conn.open(econ_host, econ_port)
+    conn.open(econ_host, econ_port, 60)
 
     vpn_apis = [("GetIPIntel", API_GetIPIntel_Net(email, 0.95)), ("IPHub", API_IPHub(iphub_token)), ("IPTheo", API_IP_Teoh_IO())]
 
