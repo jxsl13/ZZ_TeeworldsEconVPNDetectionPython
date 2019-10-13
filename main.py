@@ -106,7 +106,7 @@ async def main():
                             pass
                     else:
                         # exists in db
-                        is_vpn = bool(exists)
+                        is_vpn = bool(int(exists))
                     
                     if is_vpn:
                         execute(conn, f'ban {client_id} {vpn_ban_time} "{vpn_ban_reason}"')
