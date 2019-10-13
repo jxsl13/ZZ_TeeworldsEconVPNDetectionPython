@@ -82,72 +82,80 @@ async def main():
     except:
         r = None
 
-    # econ connection
     conn = telnetlib.Telnet()
-    conn.open(econ_host, econ_port, 60)
 
-    vpn_apis = [("GetIPIntel", API_GetIPIntel_Net(email, 0.95)), ("IPHub", API_IPHub(iphub_token)), ("IPTheo", API_IP_Teoh_IO())]
+    while True:
+        try:
+            # econ connection 
+            conn.open(econ_host, econ_port, 60)
 
-    if login(conn, password):
+            vpn_apis = [("GetIPIntel", API_GetIPIntel_Net(email, 0.95)), ("IPHub", API_IPHub(iphub_token)), ("IPTheo", API_IP_Teoh_IO())]
 
-        while True:
-            line = read_line(conn)
-            if len(line) > 0:
-                # parses connect message
-                ip, client_id = get_ip_id(line)
-                if ip:
-                    # init values
-                    exists = None
-                    is_vpn_response_dict = {}
-                    is_vpn = False
-                    got_response = False
-                    
-                    if r != None:
-                        exists = r.get(ip)
-                    
+            if login(conn, password):
 
-                    if exists == None:
-                        # does not exist in redis database
-                        # needs to be retrieved from api endpoints
-
-                        for key, api in vpn_apis:
-                            err, is_vpn = await api.is_vpn(ip)
-                
-                            if err:
-                                is_vpn_response_dict[key] = None
-                                continue
-                            else:
-                                got_response = True
-                                is_vpn_response_dict[key] = is_vpn
-
-                        
-                        if got_response:
-                            # decide based on all three results
-                            is_vpn = decide_is_vpn(conn, is_vpn_response_dict, ip)
-
-                            # set values in redis database
+                while True:
+                    line = read_line(conn)
+                    if len(line) > 0:
+                        # parses connect message
+                        ip, client_id = get_ip_id(line)
+                        if ip:
+                            # init values
+                            exists = None
+                            is_vpn_response_dict = {}
+                            is_vpn = False
+                            got_response = False
+                            
                             if r != None:
-                                if is_vpn:
-                                    # vpns are being kept forever
-                                    r.set(ip, int(is_vpn))
-                                else:
-                                    # non vpn ips are being kept for one week, before they are
-                                    # checked again.
-                                    r.set(ip, int(is_vpn), ex=(3600 * 24 * 7))
-                        else:
-                            # is not vpn, cuz could not retrieve data.
-                            pass
-                    else:
-                        # exists in db
-                        is_vpn = bool(int(exists))
-                        log(conn, "VPN", f"IP: {ip} - In cache: {int(is_vpn)}")
-                    
-                    if is_vpn:
-                        execute(conn, f'ban {client_id} {vpn_ban_time} "{vpn_ban_reason}"')
+                                exists = r.get(ip)
+                            
 
-    else:
-        print("Login failed!")
-    conn.close()
+                            if exists == None:
+                                # does not exist in redis database
+                                # needs to be retrieved from api endpoints
+
+                                for key, api in vpn_apis:
+                                    err, is_vpn = await api.is_vpn(ip)
+                        
+                                    if err:
+                                        is_vpn_response_dict[key] = None
+                                        continue
+                                    else:
+                                        got_response = True
+                                        is_vpn_response_dict[key] = is_vpn
+
+                                
+                                if got_response:
+                                    # decide based on all three results
+                                    is_vpn = decide_is_vpn(conn, is_vpn_response_dict, ip)
+
+                                    # set values in redis database
+                                    if r != None:
+                                        if is_vpn:
+                                            # vpns are being kept forever
+                                            r.set(ip, int(is_vpn))
+                                        else:
+                                            # non vpn ips are being kept for one week, before they are
+                                            # checked again.
+                                            r.set(ip, int(is_vpn), ex=(3600 * 24 * 7))
+                                else:
+                                    # is not vpn, cuz could not retrieve data.
+                                    pass
+                            else:
+                                # exists in db
+                                is_vpn = bool(int(exists))
+                                log(conn, "VPN", f"IP: {ip} - In cache: {int(is_vpn)}")
+                            
+                            if is_vpn:
+                                execute(conn, f'ban {client_id} {vpn_ban_time} "{vpn_ban_reason}"')
+
+            else:
+                print("Login failed!")
+
+        except:
+            pass
+        finally:
+            conn.close()
+    
 
 
 if __name__ == "__main__":
