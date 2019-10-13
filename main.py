@@ -63,7 +63,7 @@ async def main():
     conn = telnetlib.Telnet()
     conn.open(econ_host, econ_port)
 
-    vpn_apis = [API_GetIPIntel_Net(email, 0.95), API_IPHub(iphub_token), API_IP_Teoh_IO()]
+    vpn_apis = [API_GetIPIntel_Net(email, 1), API_IPHub(iphub_token), API_IP_Teoh_IO()]
 
     if login(conn, password):
 
