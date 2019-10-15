@@ -146,7 +146,7 @@ async def main():
                                 log(conn, "VPN", f"IP: {ip} - In cache: {int(is_vpn)}")
                             
                             if is_vpn:
-                                execute(conn, f'ban {client_id} {vpn_ban_time} "{vpn_ban_reason}"')
+                                execute(conn, f'ban {ip} {vpn_ban_time} "{vpn_ban_reason}"')
 
             else:
                 print("Login failed!")
