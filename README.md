@@ -20,7 +20,7 @@ VPN_BAN_REASON=VPN
 ### Requirements
 You need to have redis installed.
 Redis is being used as a caching database.
-Redis is a lightweight key value store, that has a footprint of only a few MB.
+Redis is a lightweight and high performance key value store, that has a footprint of only a few MB.
 
 ### Database dependencies
 ```
@@ -33,7 +33,7 @@ sudo apt install redis
 
 ### Python dependencies:
 ```
-pip3 install aiohttp python-dotenv redis
+pip3 install aiohttp python-dotenv redis hiredis
 ```
 
 ### Add the script to automatically start on reboot.

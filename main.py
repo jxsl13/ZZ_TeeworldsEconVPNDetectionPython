@@ -80,6 +80,7 @@ async def main():
         r = redis.Redis(socket_connect_timeout=1)
         r.ping()
     except:
+        print(f"Error: Could not connect to redis cache.")
         r = None
 
     conn = telnetlib.Telnet()
@@ -133,17 +134,21 @@ async def main():
                                         if is_vpn:
                                             # vpns are being kept forever
                                             r.set(ip, int(is_vpn))
+                                            print(f"{ip} is a VPN")
                                         else:
                                             # non vpn ips are being kept for one week, before they are
                                             # checked again.
                                             r.set(ip, int(is_vpn), ex=(3600 * 24 * 7))
+                                            print(f"{ip} is not a VPN")
                                 else:
                                     # is not vpn, cuz could not retrieve data.
+                                    print(f"Could not evaluate {ip} because could not retrieve any VPN data.")
                                     pass
                             else:
                                 # exists in db
                                 is_vpn = bool(int(exists))
                                 log(conn, "VPN", f"IP: {ip} - In cache: {int(is_vpn)}")
+                                print(f"{ip} found in cache: {int(is_vpn)}")
                             
                             if is_vpn:
                                 execute(conn, f'ban {ip} {vpn_ban_time} "{vpn_ban_reason}"')
@@ -152,6 +157,7 @@ async def main():
                 print("Login failed!")
 
         except:
+            print(f"Error: Could not establish econ connection: {econ_host}:{econ_port}")
             pass
         finally:
             conn.close()
